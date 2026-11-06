@@ -19,8 +19,10 @@ database, and OpenAI values; set `ALLOWED_ORIGINS` to your frontend origin.
 - Production: `uv run uvicorn app.main:app --host 0.0.0.0 --port <PORT>`
   (replace `<PORT>` with the hosting service's assigned port).
 
-Database migrations are not initialized yet; see the
-[backend setup guide](../docs/guides/backend-setup.md) when adding them.
+Alembic is configured in `alembic.ini` and `alembic/env.py`. The initial revision
+is `alembic/versions/0001_initial_schema.py`; it has not been applied to Supabase.
+See the [backend setup guide](../docs/guides/backend-setup.md) for the review and
+apply workflow.
 
 SQLAlchemy models live in `app/database/models/`, with one model per file:
 
@@ -57,7 +59,19 @@ Deleting a source document cascades to its chunks; cited chunks are protected fr
 deletion, so deleting their source document is also blocked. Auth credentials stay in Supabase;
 `auth.users` is excluded from the application's SQLAlchemy metadata.
 
-These definitions do not create tables. The next schema step is an Alembic
-migration with the vector extension, generated search column, HNSW/GIN indexes,
-and RLS policies before exposing database access. Citation validation must enforce
-that only assistant messages cite retrieved evidence.
+The prepared migration creates the vector extension, generated search column,
+HNSW cosine and GIN indexes, and RLS policies. Authenticated users can manage
+their own application user and threads, read their own messages/citations, and
+read the shared corpus. Message, citation, and corpus writes require the backend
+service role. Anonymous access is revoked. The backend must still verify ownership
+and validate citations when using the service role, which bypasses RLS.
+
+Preview SQL without connecting to the database:
+
+```powershell
+uv run alembic upgrade head --sql
+```
+
+After review and explicit approval, apply from `backend/` with
+`uv run alembic upgrade head`. The initial migration creates empty tables; it
+does not ingest filings or populate application users for existing Auth accounts.

@@ -75,8 +75,8 @@ Goal: a running FastAPI service with health check, settings, logging, and test r
 
 Goal: every table, extension, index, and RLS policy exists, managed only by Alembic.
 
-- [ ] `uv run alembic init alembic`
-- [ ] `alembic/env.py`: import SQLAlchemy metadata; read `settings.DATABASE_URL`
+- [x] `uv run alembic init alembic`
+- [x] `alembic/env.py`: import SQLAlchemy metadata; read `settings.DATABASE_URL`
 - [ ] Use the **direct/session** connection string, never the transaction pooler
 - [x] Models in `app/database/models/` (one model per file):
   - [x] `users` (keyed by `auth.users.id`)
@@ -85,14 +85,15 @@ Goal: every table, extension, index, and RLS policy exists, managed only by Alem
   - [x] `message_citations`
   - [x] `source_documents`
   - [x] `document_chunks`
-- [ ] First migration with explicit SQL:
-  - [ ] `create extension if not exists vector`
-  - [ ] `vector(1536)` embedding column
-  - [ ] generated `tsvector` column for full-text search
-  - [ ] HNSW index on embeddings
-  - [ ] GIN index on `tsvector` (+ metadata JSON if needed)
-  - [ ] RLS enabled + policies on user-owned tables
-- [ ] Review the generated migration line by line
+- [x] First migration with explicit SQL (prepared locally, not applied):
+  - [x] `create extension if not exists vector`
+  - [x] `vector(1536)` embedding column
+  - [x] generated `tsvector` column for full-text search
+  - [x] HNSW index on embeddings
+  - [x] GIN index on `tsvector` (+ metadata JSON if needed)
+  - [x] RLS enabled + policies on user-owned tables
+- [x] Review the generated migration line by line
+- [x] Offline upgrade/downgrade checks, model parity, grants, and policy SQL tests
 - [ ] `uv run alembic upgrade head`
 - [ ] Verify tables/indexes in Supabase SQL editor
 

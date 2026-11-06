@@ -34,3 +34,7 @@ dev = [
     "pytest==9.1.1",
     "ruff==0.17.2",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: requires live external services or database credentials"]

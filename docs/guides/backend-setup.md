@@ -15,13 +15,50 @@ uv add --dev pytest ruff
 
 Alembic owns database schema changes for this project. SQLAlchemy models describe the app tables, and Alembic migrations apply those changes to Supabase Postgres.
 
-Initialize Alembic once from `backend/`:
+Alembic is initialized in this repository. Run commands from `backend/`.
+Inspect the revision chain and generate SQL without a database connection:
 
 ```bash
-uv run alembic init alembic
+uv run alembic heads
+uv run alembic history
+uv run alembic upgrade head --sql
 ```
 
-Configure `alembic/env.py` to import the app's SQLAlchemy metadata and read the direct database URL from `app.config.settings`. Use the direct/session Supabase database connection, not the transaction pooler URL, for migrations.
+`alembic/env.py` imports all models through `app.database.models` and reads
+`settings.DATABASE_URL`. It selects the installed psycopg driver without storing
+credentials in `alembic.ini`. Use the direct/session Supabase database connection;
+the standard transaction-pooler port (6543) is rejected before connecting.
+The search path includes `public` and `extensions`, supporting Supabase's usual
+vector extension locations. Autogenerate only considers application table names,
+so Supabase-managed tables are excluded. When deliberately removing an application
+model, write the corresponding `drop_table` operation explicitly.
+
+The initial revision `0001` creates all six application tables, `vector(1536)`,
+the generated English search vector, cosine HNSW and GIN indexes, explicit grants,
+and RLS policies. It assumes Supabase's `auth.users`, `auth.uid()`, and API roles
+already exist. It creates no Auth users or application users and ingests no data.
+
+Access rules:
+
+| Table | Authenticated access |
+| --- | --- |
+| `users` | Read/create/update/delete own application user |
+| `chat_threads` | Read/create/update/delete own threads |
+| `chat_messages` | Read messages belonging to own threads |
+| `message_citations` | Read citations belonging to own threads |
+| `source_documents`, `document_chunks` | Read shared corpus |
+
+All tables have RLS enabled. Anonymous access is revoked. The backend service
+role can write messages, citations, and corpus data; since it bypasses RLS,
+request handlers must enforce thread ownership and grounding validation.
+Application user creation after signup remains an application responsibility.
+These rules follow [Supabase's RLS and grant model](https://supabase.com/docs/guides/database/postgres/row-level-security).
+
+`alembic/initial_schema.sql` is a generated review snapshot of the initial upgrade.
+Alembic revisions remain the schema source of truth. Offline tests compare the
+migration's tables and indexes against model metadata and check emitted policies,
+grants, and rollback order. Live execution and RLS behavior still need verification
+against Supabase after approval.
 
 Create a migration after changing SQLAlchemy models:
 
@@ -37,11 +74,17 @@ Always review the generated migration. Add explicit operations for Supabase/Post
 - HNSW and GIN indexes
 - RLS enablement and policies
 
-Apply migrations:
+After reviewing the SQL and approving changes to the target database, apply:
 
 ```bash
 uv run alembic upgrade head
 ```
+
+Then verify with `uv run alembic current` and `uv run alembic check` (both connect
+to the database). Supabase-specific policies and grants still need separate review;
+autogenerate does not compare them. `uv run alembic downgrade base` drops all six
+application tables and their data, preserving Supabase Auth, shared extensions,
+and schemas. Use downgrade only when that data loss is intended.
 
 ## Run
 

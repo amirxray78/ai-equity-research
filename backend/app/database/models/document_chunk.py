@@ -10,6 +10,7 @@ from sqlalchemy import (
     Computed,
     DateTime,
     ForeignKey,
+    Index,
     Text,
     UniqueConstraint,
     func,
@@ -28,6 +29,17 @@ if TYPE_CHECKING:
 class DocumentChunk(Base):
     __tablename__ = "document_chunks"
     __table_args__ = (
+        Index(
+            "ix_document_chunks_embedding_hnsw",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
+        Index(
+            "ix_document_chunks_search_vector_gin",
+            "search_vector",
+            postgresql_using="gin",
+        ),
         UniqueConstraint("source_document_id", "position"),
         CheckConstraint("position >= 0", name="nonnegative_position"),
         CheckConstraint("token_count > 0", name="positive_token_count"),
