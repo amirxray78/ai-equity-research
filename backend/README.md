@@ -22,7 +22,22 @@ database, and OpenAI values; set `ALLOWED_ORIGINS` to your frontend origin.
 Database migrations are not initialized yet; see the
 [backend setup guide](../docs/guides/backend-setup.md) when adding them.
 
-SQLAlchemy models live in `app/database/models.py`:
+SQLAlchemy models live in `app/database/models/`, with one model per file:
+
+```text
+models/
+├── __init__.py         # Registers and exports all models
+├── base.py             # Shared metadata and Supabase Auth reference
+├── user.py
+├── source_document.py
+├── document_chunk.py
+├── chat_thread.py
+├── chat_message.py
+└── message_citation.py
+```
+
+Import models and the complete migration metadata with
+`from app.database.models import Base, User`.
 
 - `users`: application user keyed by the existing Supabase Auth user ID.
   Create an application user after signup before creating its first thread.

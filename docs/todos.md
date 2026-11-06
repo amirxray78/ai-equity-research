@@ -78,7 +78,7 @@ Goal: every table, extension, index, and RLS policy exists, managed only by Alem
 - [ ] `uv run alembic init alembic`
 - [ ] `alembic/env.py`: import SQLAlchemy metadata; read `settings.DATABASE_URL`
 - [ ] Use the **direct/session** connection string, never the transaction pooler
-- [ ] Models in `app/database/models.py`:
+- [x] Models in `app/database/models/` (one model per file):
   - [x] `users` (keyed by `auth.users.id`)
   - [x] `chat_threads`
   - [x] `chat_messages`
