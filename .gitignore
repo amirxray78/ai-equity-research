@@ -33,6 +33,7 @@ pnpm-debug.log*
 # IDE / OS
 .vscode/
 .idea/
+tempCodeRunnerFile.*
 .DS_Store
 Thumbs.db
 

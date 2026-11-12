@@ -16,6 +16,7 @@ database, and OpenAI values; set `ALLOWED_ORIGINS` to your frontend origin.
 - Stop: `Ctrl+C`. Development reloads automatically when code changes.
 - Update installed dependencies: `uv sync` after pulling changes.
 - Lint: `uv run ruff check .`
+- Tests (offline): `uv run pytest -m "not integration"`
 - Production: `uv run uvicorn app.main:app --host 0.0.0.0 --port <PORT>`
   (replace `<PORT>` with the hosting service's assigned port).
 

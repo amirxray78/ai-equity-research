@@ -54,8 +54,9 @@ request handlers must enforce thread ownership and grounding validation.
 Application user creation after signup remains an application responsibility.
 These rules follow [Supabase's RLS and grant model](https://supabase.com/docs/guides/database/postgres/row-level-security).
 
-`alembic/initial_schema.sql` is a generated review snapshot of the initial upgrade.
-Alembic revisions remain the schema source of truth. Offline tests compare the
+Generate review SQL on demand with `uv run alembic upgrade head --sql` rather than
+keeping a duplicate SQL snapshot. Alembic revisions are the schema source of truth.
+Offline tests compare the
 migration's tables and indexes against model metadata and check emitted policies,
 grants, and rollback order. Live execution and RLS behavior still need verification
 against Supabase after approval.
